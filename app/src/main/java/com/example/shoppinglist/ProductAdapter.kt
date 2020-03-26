@@ -10,6 +10,7 @@ class ProductAdapter(private val products: ArrayList<Product>) : RecyclerView.Ad
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
+
         fun bind(product: Product) {
             itemView.tvProduct.text = product.name.toString()
             itemView.tvAmount.text = product.amount.toString()
