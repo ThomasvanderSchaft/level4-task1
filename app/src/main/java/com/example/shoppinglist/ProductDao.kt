@@ -7,6 +7,7 @@ import androidx.room.Query
 
 @Dao
 interface ProductDao {
+    //creates queries used to get, insert and delete products
     @Query("SELECT * FROM Product")
     suspend fun getAllProducts(): List<Product>
 

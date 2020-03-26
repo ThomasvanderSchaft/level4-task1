@@ -46,6 +46,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+
+    //creates field validation before inserting into the database
     private fun validator(): Boolean {
         val name = etName.text.toString()
         val amount = etAmount.text.toString()
@@ -57,9 +59,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+
+    //add item to database
     private fun addProduct() {
         if (validator()) {
             mainScope.launch {
+                //create object from text values
                 val product = Product(
                     name = etName.text.toString(),
                     amount  = etAmount.text.toString()
@@ -68,12 +73,19 @@ class MainActivity : AppCompatActivity() {
                 withContext(Dispatchers.IO) {
                     productRepository.insertProduct(product)
                 }
-
+                //update shoppinglist
                 getShoppingListFromDatabase()
             }
         }
     }
 
+    //creates option on main menu
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
+
+    //remove shoppinglist from database
     private fun deleteShoppingList() {
         mainScope.launch {
             withContext(Dispatchers.IO) {
@@ -83,17 +95,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-
-        menuInflater.inflate(R.menu.menu_main, menu)
-        return true
-    }
-
+    //creates option for icon to delete current ArrayList
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         return when (item.itemId) {
             R.id.action_delete_shopping_list -> {
                 deleteShoppingList()
@@ -105,11 +108,15 @@ class MainActivity : AppCompatActivity() {
 
     private fun getShoppingListFromDatabase() {
         CoroutineScope(Dispatchers.Main).launch {
+            //get content from repository api call
             val shoppingList = withContext(Dispatchers.IO) {
                 productRepository.getAllProducts()
             }
+            //remove all current items
             this@MainActivity.products.clear()
+            //add all new items
             this@MainActivity.products.addAll(shoppingList)
+            //notify that a change has been made
             this@MainActivity.productAdapter.notifyDataSetChanged()
         }
     }
@@ -118,11 +125,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun createItemTouchHelper(): ItemTouchHelper {
 
-        // Callback which is used to create the ItemTouch helper. Only enables left swipe.
-        // Use ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) to also enable right swipe.
         val callback = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
 
-            // Enables or Disables the ability to move items up and down.
+            // Enables or Disables the ability to move items
             override fun onMove(
                 recyclerView: RecyclerView,
                 viewHolder: RecyclerView.ViewHolder,
@@ -131,14 +136,16 @@ class MainActivity : AppCompatActivity() {
                 return false
             }
 
-            // Callback triggered when a user swiped an item.
+            // Callback triggered when an item is swiped
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position = viewHolder.adapterPosition
                 val productToDelete = products[position]
                 mainScope.launch {
                     withContext(Dispatchers.IO) {
+                        //deletes item from ArrayList
                         productRepository.deleteProduct(productToDelete)
                     }
+                    //updates shoppinglist
                     getShoppingListFromDatabase()
                 }
             }

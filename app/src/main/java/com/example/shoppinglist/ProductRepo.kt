@@ -2,6 +2,7 @@ package com.example.shoppinglist
 
 import android.content.Context
 
+//creates repository that handles queries from ProductDao and connects them to the database
 class ProductRepo(context: Context) {
     private val productDAO: ProductDao
 
